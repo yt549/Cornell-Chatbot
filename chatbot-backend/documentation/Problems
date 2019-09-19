@@ -1,0 +1,5 @@
+Problems to be solved:
+
+1. In Lex bot GetLocation function, if asked "Where is Carpenter?" It would throw an error:
+  An error has occurred: Invalid Bot Configuration: No usable messages given the current slot and sessionAttribute set.
+  But "Where is Carpenter Hall?" would give an answer. 

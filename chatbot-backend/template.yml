@@ -1,0 +1,373 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: 'Cornell Chatbot Backend'
+
+Parameters:
+
+  Application:
+    Type: 'String'
+
+  Environment:
+    Type: 'String'
+
+  BitBucketRepo:
+    Type: 'String'
+
+Globals:
+
+  Function:
+    Runtime: 'python3.7'
+    Timeout: 30
+    Handler: 'entry.lambda_handler'
+    MemorySize: 128
+
+Resources:
+
+  Api:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      EndpointConfiguration: 'REGIONAL'
+      StageName: 'api'
+      DefinitionBody:
+        swagger: 2.0
+        info:
+          title: !Sub '${Application}-${Environment}'
+        paths:
+          '/hello-world':
+            get:
+              x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST' # aws_proxy ALWAYS needs to use POST
+                responses: { }
+                uri:
+                  !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HelloWorldFunction.Arn}/invocations'
+
+
+      # ==========   hello ============
+          '/hello':
+            get:
+              x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST' # aws_proxy ALWAYS needs to use POST
+                responses: { }
+                uri:
+                  !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HelloFunction.Arn}/invocations'
+
+      # ==========  get location ===========
+          '/getLocation':
+            get:
+              x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST' # aws_proxy ALWAYS needs to use POST
+                responses: { }
+                uri:
+                  !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetLocationFunction.Arn}/invocations'
+
+#      # ==========  Play with Get weather ============
+#          '/GetWeather':
+#            get:
+#              x-amazon-apigateway-integration:
+#                type: 'aws_proxy'
+#                httpMethod: 'POST' # aws_proxy ALWAYS needs to use POST
+#                responses: { }
+#                uri:
+#                  !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetWeatherFunction.Arn}/invocations'
+
+      # ========== play with  getLocationDB function ===========
+          '/getLocationDB':
+            get:
+              x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST' # aws_proxy ALWAYS needs to use POST
+                responses: { }
+                uri:
+                  !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getLocationDBFunction.Arn}/invocations'
+
+
+      # ========== play with  createDBTable function ===========
+#          '/createDBTable':
+#            get:
+#              x-amazon-apigateway-integration:
+#                type: 'aws_proxy'
+#                httpMethod: 'POST' # aws_proxy ALWAYS needs to use POST
+#                responses: { }
+#                uri:
+#                  !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${createDBTableFunction.Arn}/invocations'
+
+      # ========== play with  putItemDBFunction function ===========
+          '/putItemDB':
+            get:
+              x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST' # aws_proxy ALWAYS needs to use POST
+                responses: { }
+                uri:
+                  !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${putItemDBFunction.Arn}/invocations'
+
+
+
+
+
+
+  HelloWorldFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub '${Application}-${Environment}-hello-world'
+      CodeUri: './build/build/lambdas/hello-world'
+      Tags:
+        Application: !Sub '${Application}'
+        Environment: !Sub '${Environment}'
+        Resource: !Sub '${Application}-hello-world'
+      Events:
+        HelloWorldResource:
+          Type: 'Api'
+          Properties:
+            Path: '/hello-world'
+            Method: 'GET'
+            RestApiId: !Ref 'Api'
+      Policies:
+        - 'AWSLambdaBasicExecutionRole'
+
+  # ========== hello ============
+
+  HelloFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub '${Application}-${Environment}-hello'
+      CodeUri: './build/build/lambdas/hello'
+      Tags:
+        Application: !Sub '${Application}'
+        Environment: !Sub '${Environment}'
+        Resource: !Sub '${Application}-hello'
+      Events:
+        HelloResource:
+          Type: 'Api'
+          Properties:
+            Path: '/hello'
+            Method: 'GET'
+            RestApiId: !Ref 'Api'
+      Policies:
+        - 'AWSLambdaBasicExecutionRole'
+
+  # ==========  get location ============
+
+  GetLocationFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub '${Application}-${Environment}-getLocation'
+      CodeUri: './build/build/lambdas/getLocation'
+      Tags:
+        Application: !Sub '${Application}'
+        Environment: !Sub '${Environment}'
+        Resource: !Sub '${Application}-getLocation'
+      Events:
+        HelloResource:
+          Type: 'Api'
+          Properties:
+            Path: '/getLocation'
+            Method: 'GET'
+            RestApiId: !Ref 'Api'
+      Policies:
+        - 'AWSLambdaBasicExecutionRole'
+
+
+  # ==========  getLocationDB ============
+
+  getLocationDBFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub '${Application}-${Environment}-getLocationDB'
+      CodeUri: './build/build/lambdas/getLocationDB'
+      Tags:
+        Application: !Sub '${Application}'
+        Environment: !Sub '${Environment}'
+        Resource: !Sub '${Application}-getLocationDB'
+      Events:
+        HelloResource:
+          Type: 'Api'
+          Properties:
+            Path: '/getLocationDB'
+            Method: 'GET'
+            RestApiId: !Ref 'Api'
+      Policies:
+        - 'AWSLambdaBasicExecutionRole'
+
+
+  # ==========  createDBTable ============
+
+#  createDBTableFunction:
+#    Type: 'AWS::Serverless::Function'
+#    Properties:
+#      FunctionName: !Sub '${Application}-${Environment}-createDBTable'
+#      CodeUri: './build/build/lambdas/createDBTable'
+#      Tags:
+#        Application: !Sub '${Application}'
+#        Environment: !Sub '${Environment}'
+#        Resource: !Sub '${Application}-createDBTable'
+#      Events:
+#        HelloResource:
+#          Type: 'Api'
+#          Properties:
+#            Path: '/createDBTable'
+#            Method: 'GET'
+#            RestApiId: !Ref 'Api'
+#      Policies:
+#        - 'AWSLambdaBasicExecutionRole'
+#        - Version: '2012-10-17'
+#          Statement:
+#            - Effect: 'Allow'
+#              Action:
+#                - 'dynamodb:CreateTable'
+#              Resource:
+##                - !Sub '${MyTable.Arn}'
+#                - "Fn::GetAtt": [ DDBTable, Arn ]
+
+  # ==========  putItemDB ============
+
+  putItemDBFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub '${Application}-${Environment}-putItemDB'
+      CodeUri: './build/build/lambdas/putItemDB'
+      Tags:
+        Application: !Sub '${Application}'
+        Environment: !Sub '${Environment}'
+        Resource: !Sub '${Application}-putItemDB'
+      Events:
+        HelloResource:
+          Type: 'Api'
+          Properties:
+            Path: '/putItemDB'
+            Method: 'GET'
+            RestApiId: !Ref 'Api'
+      Policies:
+        - 'AWSLambdaBasicExecutionRole'
+#        - Version: '2012-10-17'
+#          Statement:
+#            - Effect: 'Allow'
+#              Action:
+#                - 'dynamodb:CreateTable'
+#              Resource:
+#                - !Sub '${CornellLocations111.Arn}'
+#                - "Fn::GetAtt": [ DDBTable, Arn ]
+
+#====== DB Table Creation 2 ============
+
+  CornellLocationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CornellLocation
+      AttributeDefinitions:
+        - AttributeName: hall_name
+          AttributeType: S
+      KeySchema:
+        - AttributeName: hall_name
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+#  DynamoDBIamPolicy:
+#    Type: AWS::IAM::Policy
+#    DependsOn: DynamoDbTable
+#    Properties:
+#      PolicyName: lambda-dynamodb
+#      PolicyDocument:
+#        Version: '2012-10-17'
+#        Statement:
+#          - Effect: Allow
+#            Action:
+#              - dynamodb:GetItem
+#              - dynamodb:PutItem
+#            Resource: arn:aws:dynamodb:*:*:table/CornellLocations111
+#      Roles:
+#        - Ref: AWSLambdaBasicExecutionRole
+
+
+
+
+
+
+
+
+
+  ### BUILD SECTION - DO NOT ALTER ###
+
+  BuildBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      Tags:
+        - Key: 'Application'
+          Value: !Sub '${Application}'
+        - Key: 'Environment'
+          Value: !Sub '${Environment}'
+
+  BuildRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${Application}-${Environment}-build'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Action: 'sts:AssumeRole'
+            Principal:
+              Service: !Sub 'codebuild.${AWS::URLSuffix}'
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AWSLambdaFullAccess'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonAPIGatewayAdministrator'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AWSCodeBuildAdminAccess'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/IAMFullAccess'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AWSCloudFormationReadOnlyAccess'
+      Policies:
+        - PolicyName: 'build-permissions'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'cloudformation:*'
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${AWS::StackName}/*'
+                  - !Sub 'arn:${AWS::Partition}:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31'
+
+  BuildProject:
+    Type: 'AWS::CodeBuild::Project'
+    Properties:
+      Name: !Sub '${Application}-${Environment}'
+      Artifacts:
+        Type: 'NO_ARTIFACTS'
+      BadgeEnabled: true
+      Description: 'Cornell Chatbot Builder'
+      Environment:
+        ComputeType: 'BUILD_GENERAL1_SMALL'
+        EnvironmentVariables:
+          - Name: 'APPLICATION'
+            Value: !Sub '${Application}'
+          - Name: 'ENVIRONMENT'
+            Value: !Sub '${Environment}'
+          - Name: 'BUILD_BUCKET'
+            Value: !Sub '${BuildBucket}'
+          - Name: 'BITBUCKET_REPO'
+            Value: !Sub '${BitBucketRepo}'
+        Image: 'aws/codebuild/python:3.7.1'
+        Type: 'LINUX_CONTAINER'
+      ServiceRole: !Sub '${BuildRole.Arn}'
+      Source:
+        Auth:
+          Type: 'OAUTH'
+        BuildSpec: 'build/buildspec.yml'
+        Location: !Sub '${BitBucketRepo}'
+        Type: 'BITBUCKET'
+        GitCloneDepth: 0
+      Triggers:
+        Webhook: true
+      Tags:
+        - Key: 'Application'
+          Value: !Sub '${Application}'
+        - Key: 'Environment'
+          Value: !Sub '${Environment}'
+
+  ### END BUILD SECTION ###
+  
