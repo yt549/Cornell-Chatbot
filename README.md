@@ -1,6 +1,5 @@
-# Project Title
+# Cornell Chatbot, IT@Cornell
 
-Cornell Chatbot, IT@Cornell
 
 ## Getting Started
 
